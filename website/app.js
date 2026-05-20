@@ -13,6 +13,14 @@ const map = new maplibregl.Map({
 
 map.addControl(new maplibregl.NavigationControl(), "top-left");
 
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    setupPlacesSearch();
+  });
+} else {
+  setupPlacesSearch();
+}
+
 map.on("load", () => {
   map.addSource("csmd-segments", {
     type: "vector",
@@ -111,6 +119,118 @@ function formatValue(field, value) {
   }
 
   return value;
+}
+
+async function setupPlacesSearch() {
+  const countrySelect = document.getElementById("country-select");
+  const citySelect = document.getElementById("city-select");
+  if (!countrySelect || !citySelect) return;
+
+  try {
+    const response = await fetch("./data/places.json");
+    if (!response.ok) {
+      throw new Error("Could not load ./data/places.json");
+    }
+
+    const places = await response.json();
+    console.log("Loaded places index", places.countries.length, places.cities.length);
+
+    const countries = places.countries || [];
+    const citiesByCountry = groupCitiesByCountry(places.cities || []);
+    let currentCities = [];
+
+    populateSelect(countrySelect, "Select country", countries, (country) => country.country);
+    resetCitySelect(citySelect);
+
+    countrySelect.addEventListener("change", () => {
+      const country = countries.find((item) => item.country === countrySelect.value);
+      resetCitySelect(citySelect);
+      currentCities = [];
+
+      if (!country) return;
+
+      currentCities = citiesByCountry.get(country.country) || [];
+      populateSelect(citySelect, "Select city", currentCities, (city) => city.city);
+      citySelect.disabled = currentCities.length === 0;
+      fitToBbox(country.bbox);
+    });
+
+    citySelect.addEventListener("change", () => {
+      if (citySelect.value === "") return;
+      const city = currentCities[Number(citySelect.value)];
+      if (city) fitToBbox(city.bbox);
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function groupCitiesByCountry(cities) {
+  const grouped = new Map();
+
+  for (const city of cities) {
+    if (!grouped.has(city.country)) {
+      grouped.set(city.country, []);
+    }
+    grouped.get(city.country).push(city);
+  }
+
+  return grouped;
+}
+
+function populateSelect(select, placeholder, records, labelForRecord) {
+  select.replaceChildren(createOption("", placeholder));
+
+  records.forEach((record, index) => {
+    const value = record.city ? String(index) : record.country;
+    select.appendChild(createOption(value, labelForRecord(record)));
+  });
+}
+
+function resetCitySelect(citySelect) {
+  citySelect.replaceChildren(createOption("", "Select city"));
+  citySelect.disabled = true;
+}
+
+function createOption(value, label) {
+  const option = document.createElement("option");
+  option.value = value;
+  option.textContent = label;
+  return option;
+}
+
+function fitToBbox(bbox) {
+  if (!Array.isArray(bbox) || bbox.length !== 4) return;
+
+  map.fitBounds(
+    [
+      [bbox[0], bbox[1]],
+      [bbox[2], bbox[3]]
+    ],
+    {
+      padding: fitBoundsPadding(),
+      duration: 900,
+      maxZoom: 12
+    }
+  );
+}
+
+function fitBoundsPadding() {
+  if (window.matchMedia("(max-width: 720px)").matches) {
+    return {
+      top: Math.round(window.innerHeight * 0.52),
+      right: 32,
+      bottom: 32,
+      left: 32
+    };
+  }
+
+  return {
+    top: 48,
+    right: 48,
+    bottom: 48,
+    left: 376
+  };
 }
 
 function escapeHtml(value) {
