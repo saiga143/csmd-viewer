@@ -13,23 +13,54 @@
   <body>
     <div id="map"></div>
 
-    <div class="legend" aria-label="Map legend">
-      <h1>CSMD Segments</h1>
-      <div class="legend-row">
-        <span class="swatch swatch-csmd"></span>
-        <span>Morphologically Deprived</span>
-      </div>
-      <div class="legend-row">
-        <span class="swatch swatch-other"></span>
-        <span>Morphologically Non-deprived</span>
-      </div>
-      <p class="note">
-        CSMD is a morphology-based screening layer. It identifies city
-        segments with built-form patterns associated with deprivation and
-        should not be interpreted as a household-level poverty measure or an
-        official slum census.
-      </p>
-    </div>
+    <aside class="sidebar" aria-label="CSMD viewer information">
+      <header class="sidebar-header">
+        <h1>CSMD Explorer</h1>
+        <p class="subtitle">City Segment Morphological Deprivation</p>
+        <p class="description">
+          Interactive viewer of morphologically deprived and morphologically
+          non-deprived city segments across Africa, Asia, and Latin America and
+          the Caribbean.
+        </p>
+      </header>
+
+      <section class="stats" aria-label="Coverage statistics">
+        <div class="stat">
+          <strong>103</strong>
+          <span>countries</span>
+        </div>
+        <div class="stat">
+          <strong>5,132</strong>
+          <span>cities</span>
+        </div>
+        <div class="stat">
+          <strong>395M</strong>
+          <span>people in morphologically deprived segments</span>
+        </div>
+      </section>
+
+      <section class="panel-section legend" aria-label="Map legend">
+        <h2>Legend</h2>
+        <div class="legend-row">
+          <span class="swatch swatch-csmd"></span>
+          <span>Morphologically Deprived</span>
+        </div>
+        <div class="legend-row">
+          <span class="swatch swatch-other"></span>
+          <span>Morphologically Non-deprived</span>
+        </div>
+      </section>
+
+      <section class="panel-section">
+        <h2>Data note</h2>
+        <p class="note">
+          CSMD is a morphology-based screening layer. It identifies city
+          segments with built-form patterns associated with deprivation and
+          should not be interpreted as a household-level poverty measure or an
+          official slum census.
+        </p>
+      </section>
+    </aside>
 
     <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
     <script src="https://unpkg.com/pmtiles@3.0.7/dist/pmtiles.js"></script>
