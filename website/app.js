@@ -15,10 +15,10 @@ map.addControl(new maplibregl.NavigationControl(), "top-left");
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => {
-    setupPlacesSearch();
+    setupSidebarData();
   });
 } else {
-  setupPlacesSearch();
+  setupSidebarData();
 }
 
 map.on("load", () => {
@@ -121,11 +121,28 @@ function formatValue(field, value) {
   return value;
 }
 
-async function setupPlacesSearch() {
+async function setupSidebarData() {
+  const regionSelect = document.getElementById("region-select");
+  const subregionSelect = document.getElementById("subregion-select");
   const countrySelect = document.getElementById("country-select");
   const citySelect = document.getElementById("city-select");
-  if (!countrySelect || !citySelect) return;
+  if (!regionSelect || !subregionSelect || !countrySelect || !citySelect) return;
 
+  const [places, summary] = await Promise.all([
+    loadPlacesIndex(),
+    loadSummaryIndex()
+  ]);
+
+  if (summary) {
+    updateSummary(summary.global, summary.countries.length, summary.global.number_of_cities);
+  }
+
+  if (places) {
+    setupPlacesSearch(regionSelect, subregionSelect, countrySelect, citySelect, places, summary);
+  }
+}
+
+async function loadPlacesIndex() {
   try {
     const response = await fetch("./data/places.json");
     if (!response.ok) {
@@ -133,36 +150,199 @@ async function setupPlacesSearch() {
     }
 
     const places = await response.json();
-    console.log("Loaded places index", places.countries.length, places.cities.length);
-
     const countries = places.countries || [];
-    const citiesByCountry = groupCitiesByCountry(places.cities || []);
-    let currentCities = [];
-
-    populateSelect(countrySelect, "Select country", countries, (country) => country.country);
-    resetCitySelect(citySelect);
-
-    countrySelect.addEventListener("change", () => {
-      const country = countries.find((item) => item.country === countrySelect.value);
-      resetCitySelect(citySelect);
-      currentCities = [];
-
-      if (!country) return;
-
-      currentCities = citiesByCountry.get(country.country) || [];
-      populateSelect(citySelect, "Select city", currentCities, (city) => city.city);
-      citySelect.disabled = currentCities.length === 0;
-      fitToBbox(country.bbox);
-    });
-
-    citySelect.addEventListener("change", () => {
-      if (citySelect.value === "") return;
-      const city = currentCities[Number(citySelect.value)];
-      if (city) fitToBbox(city.bbox);
-    });
+    const cities = places.cities || [];
+    console.log("Loaded places index", countries.length, cities.length);
+    return { ...places, countries, cities };
   } catch (error) {
     console.error(error);
+    return null;
   }
+}
+
+async function loadSummaryIndex() {
+  try {
+    const response = await fetch("./data/summary.json");
+    if (!response.ok) {
+      throw new Error("Could not load ./data/summary.json");
+    }
+
+    const summary = await response.json();
+    const countries = summary.countries || [];
+    const cities = summary.cities || [];
+    console.log("Loaded summary index");
+    return { ...summary, countries, cities };
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+function setupPlacesSearch(regionSelect, subregionSelect, countrySelect, citySelect, places, summary) {
+  const countries = places.countries || [];
+  const citiesByCountry = groupCitiesByCountry(places.cities || []);
+  const regionSummaries = groupRegionSummaries((summary && summary.regions) || []);
+  const subregionSummaries = groupSubregionSummaries((summary && summary.subregions) || []);
+  const countrySummaries = groupCountrySummaries((summary && summary.countries) || []);
+  const citySummaries = groupCitySummaries((summary && summary.cities) || []);
+  const regions = uniqueSorted(countries.map((country) => country.region));
+  let currentCities = [];
+  let currentCountry = null;
+  let currentRegionCountries = [];
+  let currentSubregionCountries = [];
+
+  populateSelect(regionSelect, "Select region", regions, (region) => region);
+  resetSubregionSelect(subregionSelect);
+  resetCountrySelect(countrySelect);
+  resetCitySelect(citySelect);
+
+  regionSelect.addEventListener("change", () => {
+    const region = regionSelect.value;
+    resetSubregionSelect(subregionSelect);
+    resetCountrySelect(countrySelect);
+    resetCitySelect(citySelect);
+    currentCities = [];
+    currentCountry = null;
+    currentRegionCountries = [];
+    currentSubregionCountries = [];
+
+    if (!region) {
+      if (summary) {
+        updateSummary(summary.global, summary.countries.length, summary.global.number_of_cities);
+      }
+      return;
+    }
+
+    currentRegionCountries = countries.filter((country) => country.region === region);
+    const subregions = uniqueSorted(
+      currentRegionCountries.map((country) => country.subregion)
+    );
+
+    populateSelect(subregionSelect, "Select subregion", subregions, (subregion) => subregion);
+    subregionSelect.disabled = subregions.length === 0;
+    populateSelect(countrySelect, "Select country", currentRegionCountries, (country) => country.country);
+    countrySelect.disabled = currentRegionCountries.length === 0;
+
+    if (summary) {
+      updateSummary(
+        regionSummaries.get(region),
+        currentRegionCountries.length,
+        regionSummaries.get(region)?.number_of_cities || 0
+      );
+    }
+    fitToBbox(combineBboxes(currentRegionCountries.map((country) => country.bbox)));
+  });
+
+  subregionSelect.addEventListener("change", () => {
+    const region = regionSelect.value;
+    const subregion = subregionSelect.value;
+    resetCountrySelect(countrySelect);
+    resetCitySelect(citySelect);
+    currentCities = [];
+    currentCountry = null;
+
+    if (!region) return;
+
+    if (!subregion) {
+      currentSubregionCountries = [];
+      populateSelect(countrySelect, "Select country", currentRegionCountries, (country) => country.country);
+      countrySelect.disabled = currentRegionCountries.length === 0;
+
+      if (summary) {
+        updateSummary(
+          regionSummaries.get(region),
+          currentRegionCountries.length,
+          regionSummaries.get(region)?.number_of_cities || 0
+        );
+      }
+      fitToBbox(combineBboxes(currentRegionCountries.map((country) => country.bbox)));
+      return;
+    }
+
+    currentSubregionCountries = currentRegionCountries.filter(
+      (country) => country.subregion === subregion
+    );
+    populateSelect(countrySelect, "Select country", currentSubregionCountries, (country) => country.country);
+    countrySelect.disabled = currentSubregionCountries.length === 0;
+
+    if (summary) {
+      const summaryRecord = subregionSummaries.get(`${region}||${subregion}`);
+      updateSummary(
+        summaryRecord,
+        currentSubregionCountries.length,
+        summaryRecord?.number_of_cities || 0
+      );
+    }
+    fitToBbox(combineBboxes(currentSubregionCountries.map((country) => country.bbox)));
+  });
+
+  countrySelect.addEventListener("change", () => {
+    const countryOptions = subregionSelect.value
+      ? currentSubregionCountries
+      : currentRegionCountries;
+    const country = countryOptions.find((item) => item.country === countrySelect.value);
+    resetCitySelect(citySelect);
+    currentCities = [];
+    currentCountry = country || null;
+
+    if (!country) {
+      if (summary) {
+        const region = regionSelect.value;
+        const subregion = subregionSelect.value;
+        if (subregion) {
+          const summaryRecord = subregionSummaries.get(`${region}||${subregion}`);
+          updateSummary(
+            summaryRecord,
+            currentSubregionCountries.length,
+            summaryRecord?.number_of_cities || 0
+          );
+        } else if (region) {
+          updateSummary(
+            regionSummaries.get(region),
+            currentRegionCountries.length,
+            regionSummaries.get(region)?.number_of_cities || 0
+          );
+        }
+      }
+      return;
+    }
+
+    currentCities = citiesByCountry.get(country.country) || [];
+    populateSelect(
+      citySelect,
+      "Select city",
+      currentCities,
+      (city) => city.city,
+      (_city, index) => String(index)
+    );
+    citySelect.disabled = currentCities.length === 0;
+
+    if (summary) {
+      updateSummary(countrySummaries.get(country.country), 1, currentCities.length);
+    }
+    fitToBbox(country.bbox);
+  });
+
+  citySelect.addEventListener("change", () => {
+    if (citySelect.value === "") {
+      if (summary && currentCountry) {
+        updateSummary(
+          countrySummaries.get(currentCountry.country),
+          1,
+          currentCities.length
+        );
+      }
+      return;
+    }
+
+    const city = currentCities[Number(citySelect.value)];
+    if (!city) return;
+
+    if (summary) {
+      updateSummary(citySummaries.get(`${city.country}||${city.city}`), 1, 1);
+    }
+    fitToBbox(city.bbox);
+  });
 }
 
 function groupCitiesByCountry(cities) {
@@ -178,13 +358,63 @@ function groupCitiesByCountry(cities) {
   return grouped;
 }
 
-function populateSelect(select, placeholder, records, labelForRecord) {
+function groupRegionSummaries(regions) {
+  const grouped = new Map();
+
+  for (const region of regions) {
+    grouped.set(region.region, region);
+  }
+
+  return grouped;
+}
+
+function groupSubregionSummaries(subregions) {
+  const grouped = new Map();
+
+  for (const subregion of subregions) {
+    grouped.set(`${subregion.region}||${subregion.subregion}`, subregion);
+  }
+
+  return grouped;
+}
+
+function groupCountrySummaries(countries) {
+  const grouped = new Map();
+
+  for (const country of countries) {
+    grouped.set(country.country, country);
+  }
+
+  return grouped;
+}
+
+function groupCitySummaries(cities) {
+  const grouped = new Map();
+
+  for (const city of cities) {
+    grouped.set(`${city.country}||${city.city}`, city);
+  }
+
+  return grouped;
+}
+
+function populateSelect(select, placeholder, records, labelForRecord, valueForRecord) {
   select.replaceChildren(createOption("", placeholder));
 
   records.forEach((record, index) => {
-    const value = record.city ? String(index) : record.country;
+    const value = valueForRecord ? valueForRecord(record, index) : labelForRecord(record);
     select.appendChild(createOption(value, labelForRecord(record)));
   });
+}
+
+function resetSubregionSelect(subregionSelect) {
+  subregionSelect.replaceChildren(createOption("", "Select subregion"));
+  subregionSelect.disabled = true;
+}
+
+function resetCountrySelect(countrySelect) {
+  countrySelect.replaceChildren(createOption("", "Select country"));
+  countrySelect.disabled = true;
 }
 
 function resetCitySelect(citySelect) {
@@ -197,6 +427,27 @@ function createOption(value, label) {
   option.value = value;
   option.textContent = label;
   return option;
+}
+
+function uniqueSorted(values) {
+  return Array.from(
+    new Set(values.filter((value) => value != null && String(value).trim() !== ""))
+  ).sort((a, b) => String(a).localeCompare(String(b)));
+}
+
+function combineBboxes(bboxes) {
+  const validBboxes = bboxes.filter((bbox) => Array.isArray(bbox) && bbox.length === 4);
+  if (validBboxes.length === 0) return null;
+
+  return validBboxes.reduce(
+    (combined, bbox) => [
+      Math.min(combined[0], bbox[0]),
+      Math.min(combined[1], bbox[1]),
+      Math.max(combined[2], bbox[2]),
+      Math.max(combined[3], bbox[3])
+    ],
+    [Infinity, Infinity, -Infinity, -Infinity]
+  );
 }
 
 function fitToBbox(bbox) {
@@ -231,6 +482,52 @@ function fitBoundsPadding() {
     bottom: 48,
     left: 376
   };
+}
+
+function updateSummary(record, countryCount, cityCount) {
+  if (!record) return;
+
+  setSummaryText("summary-total-population", formatPopulation(record.total_population));
+  setSummaryText(
+    "summary-deprived-population",
+    formatPopulation(record.deprived_population)
+  );
+  setSummaryText(
+    "summary-deprived-population-share",
+    formatPercent(record.deprived_population_share)
+  );
+  setSummaryText("summary-total-segments", formatCount(record.total_segments));
+  setSummaryText("summary-deprived-segments", formatCount(record.deprived_segments));
+  setSummaryText("summary-countries", formatCount(countryCount));
+  setSummaryText("summary-cities", formatCount(cityCount));
+}
+
+function setSummaryText(id, value) {
+  const element = document.getElementById(id);
+  if (element) element.textContent = value;
+}
+
+function formatPopulation(value) {
+  const number = Number(value) || 0;
+  if (number >= 1000000000) {
+    return `${trimTrailingZeros((number / 1000000000).toFixed(2))}B`;
+  }
+  if (number >= 1000000) {
+    return `${Math.round(number / 1000000)}M`;
+  }
+  return formatCount(number);
+}
+
+function trimTrailingZeros(value) {
+  return value.replace(/\.0+$/, "").replace(/(\.\d*[1-9])0+$/, "$1");
+}
+
+function formatPercent(value) {
+  return `${(Number(value) || 0).toFixed(1)}%`;
+}
+
+function formatCount(value) {
+  return new Intl.NumberFormat("en-US").format(Number(value) || 0);
 }
 
 function escapeHtml(value) {

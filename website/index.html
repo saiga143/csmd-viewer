@@ -42,8 +42,20 @@
       <section class="panel-section search-section">
         <h2>Search</h2>
         <div class="search-field">
+          <label for="region-select">Region</label>
+          <select id="region-select">
+            <option value="">Select region</option>
+          </select>
+        </div>
+        <div class="search-field">
+          <label for="subregion-select">Subregion</label>
+          <select id="subregion-select" disabled>
+            <option value="">Select subregion</option>
+          </select>
+        </div>
+        <div class="search-field">
           <label for="country-select">Country</label>
-          <select id="country-select">
+          <select id="country-select" disabled>
             <option value="">Select country</option>
           </select>
         </div>
@@ -52,6 +64,26 @@
           <select id="city-select" disabled>
             <option value="">Select city</option>
           </select>
+        </div>
+      </section>
+
+      <section class="panel-section summary-section" aria-label="Summary statistics">
+        <h2>Summary</h2>
+        <div class="summary-grid">
+          <span>Total population covered</span>
+          <strong id="summary-total-population">...</strong>
+          <span>Population in morphologically deprived segments</span>
+          <strong id="summary-deprived-population">...</strong>
+          <span>Deprived population share</span>
+          <strong id="summary-deprived-population-share">...</strong>
+          <span>Total segments</span>
+          <strong id="summary-total-segments">...</strong>
+          <span>Deprived segments</span>
+          <strong id="summary-deprived-segments">...</strong>
+          <span>Countries</span>
+          <strong id="summary-countries">...</strong>
+          <span>Cities</span>
+          <strong id="summary-cities">...</strong>
         </div>
       </section>
 
@@ -76,6 +108,12 @@
           official slum census.
         </p>
       </section>
+
+      <p class="sidebar-footer">
+        Designed and Developed by
+        <a href="https://www.sgveeravalli.com" target="_blank" rel="noopener noreferrer">
+          Sai Ganesh Veeravalli</a>.
+      </p>
     </aside>
 
     <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
