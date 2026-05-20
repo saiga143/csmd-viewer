@@ -1,5 +1,11 @@
 # CSMD Explorer: City Segment Morphological Deprivation Viewer
 
+[![Live Viewer](https://img.shields.io/badge/Live%20viewer-GitHub%20Pages-222222)](https://saiga143.github.io/csmd-viewer/)
+![MapLibre GL JS](https://img.shields.io/badge/MapLibre%20GL%20JS-map%20rendering-396cb2)
+![PMTiles](https://img.shields.io/badge/PMTiles-vector%20tiles-5a5a5a)
+![Cloudflare R2](https://img.shields.io/badge/Cloudflare%20R2-tile%20hosting-f38020)
+![License: MIT](https://img.shields.io/badge/License-MIT-green)
+
 ## Live Viewer
 
 https://saiga143.github.io/csmd-viewer/
