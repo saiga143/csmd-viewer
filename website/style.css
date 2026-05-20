@@ -185,6 +185,14 @@ body {
   text-shadow: 0 0 8px rgba(178, 72, 70, 0.32);
 }
 
+.visitor-counter {
+  display: block;
+  max-width: 100%;
+  height: 20px;
+  margin-top: 8px;
+  opacity: 0.78;
+}
+
 .maplibregl-ctrl-top-left {
   left: 352px;
   top: 16px;
