@@ -1,5 +1,4 @@
-const PMTILES_PATH = "../outputs/csmd_viewer_segments.pmtiles";
-const PMTILES_URL = new URL(PMTILES_PATH, window.location.href).href;
+const PMTILES_URL = "https://pub-1eed28d124134a23a63504e74634d29b.r2.dev/csmd_viewer_segments.pmtiles";
 const SOURCE_LAYER = "csmd_segments";
 
 const protocol = new pmtiles.Protocol();
