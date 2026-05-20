@@ -1,0 +1,13 @@
+name: csmd-viewer
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - geopandas
+  - pyogrio
+  - shapely
+  - pandas
+  - fiona
+  - pyproj
+  - jupyter
+  - ipykernel
