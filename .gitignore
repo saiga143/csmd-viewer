@@ -216,3 +216,13 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local data outputs
+outputs/
+*.gpkg
+*.geojsonseq
+*.pmtiles
+
+# Notebooks
+notebooks/
+.ipynb_checkpoints/
