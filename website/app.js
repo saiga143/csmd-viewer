@@ -24,10 +24,12 @@ if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => {
     setupSidebarData();
     setupMapControls();
+    setupAboutModal();
   });
 } else {
   setupSidebarData();
   setupMapControls();
+  setupAboutModal();
 }
 
 map.on("load", () => {
@@ -610,6 +612,36 @@ function formatPercent(value) {
 
 function formatCount(value) {
   return new Intl.NumberFormat("en-US").format(Number(value) || 0);
+}
+
+function setupAboutModal() {
+  const modal = document.getElementById("about-modal");
+  const openButton = document.querySelector("[data-about-open]");
+  const closeButton = document.querySelector("[data-about-close]");
+  if (!modal || !openButton || !closeButton) return;
+
+  function openModal() {
+    modal.hidden = false;
+    closeButton.focus();
+  }
+
+  function closeModal() {
+    modal.hidden = true;
+    openButton.focus();
+  }
+
+  openButton.addEventListener("click", openModal);
+  closeButton.addEventListener("click", closeModal);
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !modal.hidden) {
+      closeModal();
+    }
+  });
 }
 
 function escapeHtml(value) {

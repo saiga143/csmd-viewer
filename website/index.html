@@ -50,6 +50,8 @@
       </div>
     </div>
 
+    <button class="about-button" type="button" data-about-open>About / Paper</button>
+
     <aside class="sidebar" aria-label="CSMD viewer information">
       <header class="sidebar-header">
         <h1>CSMD Explorer</h1>
@@ -158,6 +160,44 @@
         alt="Visitor counter"
       >
     </aside>
+
+    <div
+      class="about-modal"
+      id="about-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="about-modal-title"
+      hidden
+    >
+      <div class="about-card">
+        <button class="about-close" type="button" aria-label="Close about dialog" data-about-close>
+          &times;
+        </button>
+        <h2 id="about-modal-title">CSMD Explorer</h2>
+        <section class="paper-section" aria-label="Associated paper">
+          <h3>Associated paper</h3>
+          <dl class="paper-details">
+            <dt>Paper title</dt>
+            <dd>The Hidden Burden of Morphological Deprivation in Small and Medium Cities</dd>
+            <dt>Authors</dt>
+            <dd>
+              Sai Ganesh Veeravalli, Alejandro Blei, John Friesen, Bedru Tareke,
+              Monika Kuffer, Claudio Persello, Raian Maretto, Angela Abascal,
+              Stefanos Georganos, and Dana R. Thomson
+            </dd>
+            <dt>Status</dt>
+            <dd>Accepted in Principle, Nature Cities, 2026</dd>
+            <dt>DOI</dt>
+            <dd>Coming soon</dd>
+          </dl>
+        </section>
+        <div class="logo-row" aria-label="Associated logos">
+          <img src="./assets/logos/deprimap_logo.png" alt="DEPRIMAP logo">
+          <img src="./assets/logos/neogeo_kau_logo.png" alt="NEOGEO / Karlstad University logo">
+          <img src="./assets/logos/formas_logo.png" alt="FORMAS logo">
+        </div>
+      </div>
+    </div>
 
     <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
     <script src="https://unpkg.com/pmtiles@3.0.7/dist/pmtiles.js"></script>
