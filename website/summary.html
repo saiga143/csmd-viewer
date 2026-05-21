@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CSMD Summary Statistics</title>
+    <link rel="stylesheet" href="summary.css">
+  </head>
+  <body>
+    <main class="page">
+      <nav class="top-nav">
+        <a href="./index.html">Back to map viewer</a>
+      </nav>
+
+      <header class="page-header">
+        <h1>CSMD Summary Statistics</h1>
+        <p>
+          Global, regional, subregional, and country-level summaries of City
+          Segment Morphological Deprivation.
+        </p>
+      </header>
+
+      <section class="summary-section" aria-label="Global summary statistics">
+        <h2>Global Summary</h2>
+        <div id="global-summary" class="summary-cards">
+          <article class="summary-card">
+            <span>Countries</span>
+            <strong>...</strong>
+          </article>
+          <article class="summary-card">
+            <span>Cities</span>
+            <strong>...</strong>
+          </article>
+          <article class="summary-card">
+            <span>Total population covered</span>
+            <strong>...</strong>
+          </article>
+          <article class="summary-card">
+            <span>Population in morphologically deprived segments</span>
+            <strong>...</strong>
+          </article>
+          <article class="summary-card">
+            <span>Deprived population share</span>
+            <strong>...</strong>
+          </article>
+          <article class="summary-card">
+            <span>Total segments</span>
+            <strong>...</strong>
+          </article>
+          <article class="summary-card">
+            <span>Deprived segments</span>
+            <strong>...</strong>
+          </article>
+        </div>
+      </section>
+
+      <section class="chart-section" aria-label="Population classification chart">
+        <h2>Global population by CSMD class</h2>
+        <div class="chart-card">
+          <canvas id="population-classification-chart"></canvas>
+        </div>
+      </section>
+
+      <section class="chart-section" aria-label="Regional comparison charts">
+        <h2>Regional comparison</h2>
+        <div class="chart-grid">
+          <article class="chart-card regional-chart-card">
+            <h3>Population in morphologically deprived segments by region</h3>
+            <canvas id="regional-deprived-population-chart"></canvas>
+          </article>
+          <article class="chart-card regional-chart-card">
+            <h3>Deprived population share by region</h3>
+            <canvas id="regional-deprived-share-chart"></canvas>
+          </article>
+        </div>
+        <p class="chart-note">LAC = Latin America and the Caribbean.</p>
+      </section>
+
+      <section class="chart-section" aria-label="Subregional breakdown charts">
+        <h2>Subregional breakdown</h2>
+        <p class="section-helper">Select a region to view subregional patterns.</p>
+        <div class="tab-row" role="tablist" aria-label="Select region">
+          <button class="region-tab active" type="button" data-region="Africa">Africa</button>
+          <button class="region-tab" type="button" data-region="Asia">Asia</button>
+          <button
+            class="region-tab"
+            type="button"
+            data-region="Latin America and the Caribbean"
+          >
+            LAC
+          </button>
+        </div>
+        <div class="subregional-chart-stack">
+          <article class="chart-card subregional-chart-card">
+            <h3>Population in morphologically deprived segments by subregion</h3>
+            <canvas id="subregional-deprived-population-chart"></canvas>
+          </article>
+          <article class="chart-card subregional-chart-card">
+            <h3>Deprived population share by subregion</h3>
+            <canvas id="subregional-deprived-share-chart"></canvas>
+          </article>
+        </div>
+      </section>
+
+      <section class="chart-section" aria-label="Country contribution chart">
+        <h2>Country contribution by subregion</h2>
+        <p class="section-helper">
+          Select a subregion to see which countries contribute most to its
+          morphologically deprived population.
+        </p>
+        <div class="filter-row">
+          <label>
+            Region
+            <select id="country-contribution-region">
+              <option value="Africa">Africa</option>
+              <option value="Asia" selected>Asia</option>
+              <option value="Latin America and the Caribbean">LAC</option>
+            </select>
+          </label>
+          <label>
+            Subregion
+            <select id="country-contribution-subregion"></select>
+          </label>
+        </div>
+        <article class="chart-card country-contribution-card">
+          <h3>Country contribution to subregion deprived population</h3>
+          <canvas id="country-contribution-chart"></canvas>
+        </article>
+        <p class="chart-note">
+          Percentages shown at the end of bars represent each country's
+          contribution to the selected subregion's morphologically deprived
+          population.
+        </p>
+        <article class="chart-card country-contribution-card secondary-country-chart">
+          <h3>Country deprived population share</h3>
+          <canvas id="country-deprived-share-chart"></canvas>
+        </article>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="summary.js"></script>
+  </body>
+</html>

@@ -18,7 +18,7 @@ const map = new maplibregl.Map({
   zoom: 1.5
 });
 
-map.addControl(new maplibregl.NavigationControl(), "top-left");
+map.addControl(new maplibregl.NavigationControl(), "bottom-left");
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => {
