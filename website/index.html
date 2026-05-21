@@ -13,6 +13,43 @@
   <body>
     <div id="map"></div>
 
+    <div class="map-controls" aria-label="Map display controls">
+      <div class="control-group">
+        <h2>Basemap</h2>
+        <div class="control-options">
+          <label>
+            <input type="radio" name="basemap" value="streets" checked>
+            Streets
+          </label>
+          <label>
+            <input type="radio" name="basemap" value="satellite">
+            Satellite
+          </label>
+        </div>
+        <p id="satellite-attribution" class="satellite-attribution" hidden>
+          Satellite imagery: Esri, Maxar, Earthstar Geographics, and the GIS
+          User Community.
+        </p>
+        <p id="satellite-temporal-note" class="satellite-attribution" hidden>
+          Imagery date varies by location and may not match the CSMD reference
+          period.
+        </p>
+      </div>
+      <div class="control-group">
+        <h2>CSMD layer</h2>
+        <div class="control-options">
+          <label>
+            <input type="radio" name="csmd-layer" value="on" checked>
+            On
+          </label>
+          <label>
+            <input type="radio" name="csmd-layer" value="off">
+            Off
+          </label>
+        </div>
+      </div>
+    </div>
+
     <aside class="sidebar" aria-label="CSMD viewer information">
       <header class="sidebar-header">
         <h1>CSMD Explorer</h1>

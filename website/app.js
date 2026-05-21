@@ -1,5 +1,12 @@
 const PMTILES_URL = "https://pub-1eed28d124134a23a63504e74634d29b.r2.dev/csmd_viewer_segments.pmtiles";
 const SOURCE_LAYER = "csmd_segments";
+const SATELLITE_SOURCE_ID = "esri-world-imagery";
+const SATELLITE_LAYER_ID = "esri-world-imagery";
+const CSMD_FILL_LAYER_ID = "csmd-segments-fill";
+const CSMD_OUTLINE_LAYER_ID = "csmd-segments-outline";
+
+let currentBasemap = "streets";
+let currentCsmdVisibility = "on";
 
 const protocol = new pmtiles.Protocol();
 maplibregl.addProtocol("pmtiles", protocol.tile);
@@ -16,19 +23,38 @@ map.addControl(new maplibregl.NavigationControl(), "top-left");
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => {
     setupSidebarData();
+    setupMapControls();
   });
 } else {
   setupSidebarData();
+  setupMapControls();
 }
 
 map.on("load", () => {
+  map.addSource(SATELLITE_SOURCE_ID, {
+    type: "raster",
+    tiles: [
+      "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+    ],
+    tileSize: 256
+  });
+
+  map.addLayer({
+    id: SATELLITE_LAYER_ID,
+    type: "raster",
+    source: SATELLITE_SOURCE_ID,
+    layout: {
+      visibility: "none"
+    }
+  });
+
   map.addSource("csmd-segments", {
     type: "vector",
     url: `pmtiles://${PMTILES_URL}`
   });
 
   map.addLayer({
-    id: "csmd-segments-fill",
+    id: CSMD_FILL_LAYER_ID,
     type: "fill",
     source: "csmd-segments",
     "source-layer": SOURCE_LAYER,
@@ -52,7 +78,7 @@ map.on("load", () => {
   });
 
   map.addLayer({
-    id: "csmd-segments-outline",
+    id: CSMD_OUTLINE_LAYER_ID,
     type: "line",
     source: "csmd-segments",
     "source-layer": SOURCE_LAYER,
@@ -68,7 +94,7 @@ map.on("load", () => {
     }
   });
 
-  map.on("click", "csmd-segments-fill", (event) => {
+  map.on("click", CSMD_FILL_LAYER_ID, (event) => {
     const feature = event.features && event.features[0];
     if (!feature) return;
 
@@ -78,13 +104,16 @@ map.on("load", () => {
       .addTo(map);
   });
 
-  map.on("mouseenter", "csmd-segments-fill", () => {
+  map.on("mouseenter", CSMD_FILL_LAYER_ID, () => {
     map.getCanvas().style.cursor = "pointer";
   });
 
-  map.on("mouseleave", "csmd-segments-fill", () => {
+  map.on("mouseleave", CSMD_FILL_LAYER_ID, () => {
     map.getCanvas().style.cursor = "";
   });
+
+  setBasemap(currentBasemap);
+  setCsmdVisibility(currentCsmdVisibility);
 });
 
 function renderPopup(properties) {
@@ -119,6 +148,59 @@ function formatValue(field, value) {
   }
 
   return value;
+}
+
+function setupMapControls() {
+  const basemapInputs = document.querySelectorAll("input[name='basemap']");
+  basemapInputs.forEach((input) => {
+    input.addEventListener("change", () => {
+      if (input.checked) {
+        setBasemap(input.value);
+      }
+    });
+  });
+
+  const csmdInputs = document.querySelectorAll("input[name='csmd-layer']");
+  csmdInputs.forEach((input) => {
+    input.addEventListener("change", () => {
+      if (input.checked) {
+        setCsmdVisibility(input.value);
+      }
+    });
+  });
+}
+
+function setBasemap(basemap) {
+  currentBasemap = basemap;
+  const showSatellite = basemap === "satellite";
+  const satelliteAttribution = document.getElementById("satellite-attribution");
+  const satelliteTemporalNote = document.getElementById("satellite-temporal-note");
+
+  if (map.getLayer(SATELLITE_LAYER_ID)) {
+    map.setLayoutProperty(
+      SATELLITE_LAYER_ID,
+      "visibility",
+      showSatellite ? "visible" : "none"
+    );
+  }
+
+  if (satelliteAttribution) {
+    satelliteAttribution.hidden = !showSatellite;
+  }
+  if (satelliteTemporalNote) {
+    satelliteTemporalNote.hidden = !showSatellite;
+  }
+}
+
+function setCsmdVisibility(visibility) {
+  currentCsmdVisibility = visibility;
+  const layerVisibility = visibility === "on" ? "visible" : "none";
+
+  [CSMD_FILL_LAYER_ID, CSMD_OUTLINE_LAYER_ID].forEach((layerId) => {
+    if (map.getLayer(layerId)) {
+      map.setLayoutProperty(layerId, "visibility", layerVisibility);
+    }
+  });
 }
 
 async function setupSidebarData() {
