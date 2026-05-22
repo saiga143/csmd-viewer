@@ -4,9 +4,13 @@ const SATELLITE_SOURCE_ID = "esri-world-imagery";
 const SATELLITE_LAYER_ID = "esri-world-imagery";
 const CSMD_FILL_LAYER_ID = "csmd-segments-fill";
 const CSMD_OUTLINE_LAYER_ID = "csmd-segments-outline";
+const CSMD_HIGHLIGHT_SOURCE_ID = "selected-csmd-segment";
+const CSMD_HIGHLIGHT_FILL_LAYER_ID = "selected-csmd-segment-fill";
+const CSMD_HIGHLIGHT_OUTLINE_LAYER_ID = "selected-csmd-segment-outline";
 
 let currentBasemap = "streets";
 let currentCsmdVisibility = "on";
+let selectedPopup = null;
 
 const protocol = new pmtiles.Protocol();
 maplibregl.addProtocol("pmtiles", protocol.tile);
@@ -96,14 +100,62 @@ map.on("load", () => {
     }
   });
 
+  map.addSource(CSMD_HIGHLIGHT_SOURCE_ID, {
+    type: "geojson",
+    data: emptyFeatureCollection()
+  });
+
+  map.addLayer({
+    id: CSMD_HIGHLIGHT_FILL_LAYER_ID,
+    type: "fill",
+    source: CSMD_HIGHLIGHT_SOURCE_ID,
+    paint: {
+      "fill-color": "#111111",
+      "fill-opacity": 0.08
+    }
+  });
+
+  map.addLayer({
+    id: CSMD_HIGHLIGHT_OUTLINE_LAYER_ID,
+    type: "line",
+    source: CSMD_HIGHLIGHT_SOURCE_ID,
+    paint: {
+      "line-color": "#000000",
+      "line-width": 3,
+      "line-opacity": 1
+    }
+  });
+
   map.on("click", CSMD_FILL_LAYER_ID, (event) => {
     const feature = event.features && event.features[0];
     if (!feature) return;
 
-    new maplibregl.Popup()
+    setSelectedSegment(feature);
+    removeSelectedPopup();
+
+    const popup = new maplibregl.Popup()
       .setLngLat(event.lngLat)
       .setHTML(renderPopup(feature.properties || {}))
       .addTo(map);
+
+    selectedPopup = popup;
+    popup.on("close", () => {
+      if (selectedPopup === popup) {
+        selectedPopup = null;
+        clearSelectedSegment();
+      }
+    });
+  });
+
+  map.on("click", (event) => {
+    const features = map.queryRenderedFeatures(event.point, {
+      layers: [CSMD_FILL_LAYER_ID]
+    });
+
+    if (features.length === 0) {
+      removeSelectedPopup();
+      clearSelectedSegment();
+    }
   });
 
   map.on("mouseenter", CSMD_FILL_LAYER_ID, () => {
@@ -198,11 +250,54 @@ function setCsmdVisibility(visibility) {
   currentCsmdVisibility = visibility;
   const layerVisibility = visibility === "on" ? "visible" : "none";
 
-  [CSMD_FILL_LAYER_ID, CSMD_OUTLINE_LAYER_ID].forEach((layerId) => {
+  [
+    CSMD_FILL_LAYER_ID,
+    CSMD_OUTLINE_LAYER_ID,
+    CSMD_HIGHLIGHT_FILL_LAYER_ID,
+    CSMD_HIGHLIGHT_OUTLINE_LAYER_ID
+  ].forEach((layerId) => {
     if (map.getLayer(layerId)) {
       map.setLayoutProperty(layerId, "visibility", layerVisibility);
     }
   });
+}
+
+function setSelectedSegment(feature) {
+  const source = map.getSource(CSMD_HIGHLIGHT_SOURCE_ID);
+  if (!source || !feature.geometry) return;
+
+  source.setData({
+    type: "FeatureCollection",
+    features: [
+      {
+        type: "Feature",
+        geometry: feature.geometry,
+        properties: {}
+      }
+    ]
+  });
+}
+
+function clearSelectedSegment() {
+  const source = map.getSource(CSMD_HIGHLIGHT_SOURCE_ID);
+  if (source) {
+    source.setData(emptyFeatureCollection());
+  }
+}
+
+function removeSelectedPopup() {
+  if (!selectedPopup) return;
+
+  const popup = selectedPopup;
+  selectedPopup = null;
+  popup.remove();
+}
+
+function emptyFeatureCollection() {
+  return {
+    type: "FeatureCollection",
+    features: []
+  };
 }
 
 async function setupSidebarData() {
