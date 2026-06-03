@@ -2,10 +2,121 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="refresh" content="0; url=website/index.html">
-    <title>Redirecting...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CSMD Explorer</title>
+    <style>
+      html,
+      body {
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        display: grid;
+        place-items: center;
+        box-sizing: border-box;
+        padding: 24px;
+        color: #202020;
+        background: #f6f6f4;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      main {
+        width: min(720px, 100%);
+        padding: 36px;
+        background: rgba(255, 255, 255, 0.96);
+        border: 1px solid #d8d8d8;
+        border-radius: 6px;
+        box-shadow: 0 2px 14px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+
+      h1 {
+        margin: 0;
+        color: #111;
+        font-size: 32px;
+        line-height: 1.15;
+      }
+
+      .message {
+        margin: 18px auto 0;
+        max-width: 560px;
+        color: #444;
+        font-size: 16px;
+        line-height: 1.55;
+      }
+
+      .paper {
+        margin: 28px 0 0;
+        padding-top: 22px;
+        border-top: 1px solid #e0e0dc;
+      }
+
+      .label {
+        display: block;
+        color: #666;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.2;
+        text-transform: uppercase;
+      }
+
+      .paper-title,
+      .status {
+        margin: 8px 0 0;
+        color: #222;
+        font-size: 15px;
+        line-height: 1.45;
+      }
+
+      .status-block {
+        margin-top: 20px;
+      }
+
+      .playful {
+        margin: 28px auto 0;
+        max-width: 560px;
+        color: #666;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 520px) {
+        main {
+          padding: 28px 22px;
+        }
+
+        h1 {
+          font-size: 28px;
+        }
+      }
+    </style>
   </head>
   <body>
-    <p><a href="website/index.html">Continue to the CSMD viewer</a></p>
+    <main>
+      <h1>CSMD Explorer</h1>
+      <p class="message">
+        The City Segment Morphological Deprivation viewer will be available
+        after the associated paper is published.
+      </p>
+
+      <section class="paper" aria-label="Associated paper">
+        <span class="label">Paper</span>
+        <p class="paper-title">
+          The Hidden Burden of Morphological Deprivation in Small and Medium
+          Cities
+        </p>
+
+        <div class="status-block">
+          <span class="label">Status</span>
+          <p class="status">Accepted in Principle, Nature Cities, 2026</p>
+        </div>
+      </section>
+
+      <p class="playful">
+        Until then, live on with your life — the maps will be here when the
+        time is right.
+      </p>
+    </main>
   </body>
 </html>
