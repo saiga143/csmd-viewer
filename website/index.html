@@ -3,204 +3,61 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>CSMD Segment Viewer</title>
-    <link
-      href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
-      rel="stylesheet"
-    >
-    <link rel="stylesheet" href="style.css">
+    <meta http-equiv="refresh" content="0; url=../index.html">
+    <title>CSMD Explorer</title>
+    <style>
+      html,
+      body {
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        display: grid;
+        place-items: center;
+        box-sizing: border-box;
+        padding: 24px;
+        color: #202020;
+        background: #f6f6f4;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      main {
+        width: min(640px, 100%);
+        padding: 32px;
+        background: rgba(255, 255, 255, 0.96);
+        border: 1px solid #d8d8d8;
+        border-radius: 6px;
+        box-shadow: 0 2px 14px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+
+      h1 {
+        margin: 0;
+        color: #111;
+        font-size: 28px;
+        line-height: 1.15;
+      }
+
+      p {
+        margin: 16px auto 0;
+        max-width: 520px;
+        color: #444;
+        font-size: 15px;
+        line-height: 1.55;
+      }
+    </style>
+    <script>
+      window.location.replace("../index.html");
+    </script>
   </head>
   <body>
-    <div id="map"></div>
-
-    <div class="map-controls" aria-label="Map display controls">
-      <div class="control-group">
-        <h2>Basemap</h2>
-        <div class="control-options">
-          <label>
-            <input type="radio" name="basemap" value="streets" checked>
-            Streets
-          </label>
-          <label>
-            <input type="radio" name="basemap" value="satellite">
-            Satellite
-          </label>
-        </div>
-        <p id="satellite-attribution" class="satellite-attribution" hidden>
-          Satellite imagery: Esri, Maxar, Earthstar Geographics, and the GIS
-          User Community.
-        </p>
-        <p id="satellite-temporal-note" class="satellite-attribution" hidden>
-          Imagery date varies by location and may not match the CSMD reference
-          period.
-        </p>
-      </div>
-      <div class="control-group">
-        <h2>CSMD layer</h2>
-        <div class="control-options">
-          <label>
-            <input type="radio" name="csmd-layer" value="on" checked>
-            On
-          </label>
-          <label>
-            <input type="radio" name="csmd-layer" value="off">
-            Off
-          </label>
-        </div>
-      </div>
-    </div>
-
-    <button class="about-button" type="button" data-about-open>About / Paper</button>
-
-    <aside class="sidebar" aria-label="CSMD viewer information">
-      <header class="sidebar-header">
-        <h1>CSMD Explorer</h1>
-        <p class="subtitle">City Segment Morphological Deprivation</p>
-        <p class="description">
-          Interactive viewer of morphologically deprived and morphologically
-          non-deprived city segments across Africa, Asia, and Latin America and
-          the Caribbean.
-        </p>
-        <a class="summary-link" href="./summary.html">View summary statistics →</a>
-      </header>
-
-      <section class="stats" aria-label="Coverage statistics">
-        <div class="stat">
-          <strong>103</strong>
-          <span>countries</span>
-        </div>
-        <div class="stat">
-          <strong>5,132</strong>
-          <span>cities</span>
-        </div>
-        <div class="stat">
-          <strong>395M</strong>
-          <span>people in morphologically deprived segments</span>
-        </div>
-      </section>
-
-      <section class="panel-section search-section">
-        <h2>Search</h2>
-        <div class="search-field">
-          <label for="region-select">Region</label>
-          <select id="region-select">
-            <option value="">Select region</option>
-          </select>
-        </div>
-        <div class="search-field">
-          <label for="subregion-select">Subregion</label>
-          <select id="subregion-select" disabled>
-            <option value="">Select subregion</option>
-          </select>
-        </div>
-        <div class="search-field">
-          <label for="country-select">Country</label>
-          <select id="country-select" disabled>
-            <option value="">Select country</option>
-          </select>
-        </div>
-        <div class="search-field">
-          <label for="city-select">City</label>
-          <select id="city-select" disabled>
-            <option value="">Select city</option>
-          </select>
-        </div>
-      </section>
-
-      <section class="panel-section summary-section" aria-label="Summary statistics">
-        <h2>Summary</h2>
-        <div class="summary-grid">
-          <span>Total population covered</span>
-          <strong id="summary-total-population">...</strong>
-          <span>Population in morphologically deprived segments</span>
-          <strong id="summary-deprived-population">...</strong>
-          <span>Deprived population share</span>
-          <strong id="summary-deprived-population-share">...</strong>
-          <span>Total segments</span>
-          <strong id="summary-total-segments">...</strong>
-          <span>Deprived segments</span>
-          <strong id="summary-deprived-segments">...</strong>
-          <span>Countries</span>
-          <strong id="summary-countries">...</strong>
-          <span>Cities</span>
-          <strong id="summary-cities">...</strong>
-        </div>
-      </section>
-
-      <section class="panel-section legend" aria-label="Map legend">
-        <h2>Legend</h2>
-        <div class="legend-row">
-          <span class="swatch swatch-csmd"></span>
-          <span>Morphologically Deprived</span>
-        </div>
-        <div class="legend-row">
-          <span class="swatch swatch-other"></span>
-          <span>Morphologically Non-deprived</span>
-        </div>
-      </section>
-
-      <section class="panel-section">
-        <h2>Data note</h2>
-        <p class="note">
-          CSMD is a morphology-based screening layer. It identifies city
-          segments with built-form patterns associated with deprivation and
-          should not be interpreted as a household-level poverty measure or an
-          official slum census.
-        </p>
-      </section>
-
-      <p class="sidebar-footer">
-        Designed and Developed by
-        <a href="https://www.sgveeravalli.com" target="_blank" rel="noopener noreferrer">
-          Sai Ganesh Veeravalli</a>.
+    <main>
+      <h1>CSMD Explorer</h1>
+      <p>
+        The City Segment Morphological Deprivation viewer will be available
+        after the associated paper is published.
       </p>
-      <img
-        class="visitor-counter"
-        src="https://hitscounter.dev/api/hit?url=https%3A%2F%2Fsaiga143.github.io%2Fcsmd-viewer%2F&label=Visitors&icon=eye&color=%231f2937"
-        alt="Visitor counter"
-      >
-    </aside>
-
-    <div
-      class="about-modal"
-      id="about-modal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="about-modal-title"
-      hidden
-    >
-      <div class="about-card">
-        <button class="about-close" type="button" aria-label="Close about dialog" data-about-close>
-          &times;
-        </button>
-        <h2 id="about-modal-title">CSMD Explorer</h2>
-        <section class="paper-section" aria-label="Associated paper">
-          <h3>Associated paper</h3>
-          <dl class="paper-details">
-            <dt>Paper title</dt>
-            <dd>The Hidden Burden of Morphological Deprivation in Small and Medium Cities</dd>
-            <dt>Authors</dt>
-            <dd>
-              Sai Ganesh Veeravalli, Alejandro Blei, John Friesen, Bedru Tareke,
-              Monika Kuffer, Claudio Persello, Raian Maretto, Angela Abascal,
-              Stefanos Georganos, and Dana R. Thomson
-            </dd>
-            <dt>Status</dt>
-            <dd>Accepted in Principle, Nature Cities, 2026</dd>
-            <dt>DOI</dt>
-            <dd>Coming soon</dd>
-          </dl>
-        </section>
-        <div class="logo-row" aria-label="Associated logos">
-          <img src="./assets/logos/deprimap_logo.png" alt="DEPRIMAP logo">
-          <img src="./assets/logos/neogeo_kau_logo.png" alt="NEOGEO / Karlstad University logo">
-          <img src="./assets/logos/formas_logo.png" alt="FORMAS logo">
-        </div>
-      </div>
-    </div>
-
-    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-    <script src="https://unpkg.com/pmtiles@3.0.7/dist/pmtiles.js"></script>
-    <script src="app.js"></script>
+    </main>
   </body>
 </html>
