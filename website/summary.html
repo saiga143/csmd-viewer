@@ -3,61 +3,182 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="refresh" content="0; url=../index.html">
-    <title>CSMD Explorer</title>
-    <style>
-      html,
-      body {
-        min-height: 100%;
-        margin: 0;
-      }
-
-      body {
-        display: grid;
-        place-items: center;
-        box-sizing: border-box;
-        padding: 24px;
-        color: #202020;
-        background: #f6f6f4;
-        font-family: Arial, Helvetica, sans-serif;
-      }
-
-      main {
-        width: min(640px, 100%);
-        padding: 32px;
-        background: rgba(255, 255, 255, 0.96);
-        border: 1px solid #d8d8d8;
-        border-radius: 6px;
-        box-shadow: 0 2px 14px rgba(0, 0, 0, 0.1);
-        text-align: center;
-      }
-
-      h1 {
-        margin: 0;
-        color: #111;
-        font-size: 28px;
-        line-height: 1.15;
-      }
-
-      p {
-        margin: 16px auto 0;
-        max-width: 520px;
-        color: #444;
-        font-size: 15px;
-        line-height: 1.55;
-      }
-    </style>
-    <script>
-      window.location.replace("../index.html");
-    </script>
+    <title>CSMD Summary Statistics</title>
+    <link rel="stylesheet" href="summary.css">
   </head>
   <body>
-    <main>
-      <h1>CSMD Explorer</h1>
-      <p>
-        The City Segment Morphological Deprivation viewer will be available
-        after the associated paper is published.
-      </p>
+    <button class="about-button" type="button" data-about-open>About / Paper</button>
+
+    <main class="page">
+      <nav class="top-nav">
+        <a href="./index.html">← Back to map viewer</a>
+      </nav>
+
+      <header class="page-header">
+        <h1>CSMD Summary Statistics</h1>
+        <p>
+          Global, regional, subregional, and country-level summaries of City
+          Segment Morphological Deprivation.
+        </p>
+      </header>
+
+      <section class="summary-section" aria-label="Global summary statistics">
+        <h2>Global Summary</h2>
+        <div id="global-summary" class="summary-cards">
+          <article class="summary-card">
+            <span>Countries</span>
+            <strong>...</strong>
+          </article>
+          <article class="summary-card">
+            <span>Cities</span>
+            <strong>...</strong>
+          </article>
+          <article class="summary-card">
+            <span>Total population covered</span>
+            <strong>...</strong>
+          </article>
+          <article class="summary-card">
+            <span>Population in morphologically deprived segments</span>
+            <strong>...</strong>
+          </article>
+          <article class="summary-card">
+            <span>Deprived population share</span>
+            <strong>...</strong>
+          </article>
+          <article class="summary-card">
+            <span>Total segments</span>
+            <strong>...</strong>
+          </article>
+          <article class="summary-card">
+            <span>Deprived segments</span>
+            <strong>...</strong>
+          </article>
+        </div>
+      </section>
+
+      <section class="chart-section" aria-label="Population classification chart">
+        <h2>Global population by CSMD class</h2>
+        <div class="chart-card">
+          <canvas id="population-classification-chart"></canvas>
+        </div>
+      </section>
+
+      <section class="chart-section" aria-label="Regional comparison charts">
+        <h2>Regional comparison</h2>
+        <div class="chart-grid">
+          <article class="chart-card regional-chart-card">
+            <h3>Population in morphologically deprived segments by region</h3>
+            <canvas id="regional-deprived-population-chart"></canvas>
+          </article>
+          <article class="chart-card regional-chart-card">
+            <h3>Deprived population share by region</h3>
+            <canvas id="regional-deprived-share-chart"></canvas>
+          </article>
+        </div>
+        <p class="chart-note">LAC = Latin America and the Caribbean.</p>
+      </section>
+
+      <section class="chart-section" aria-label="Subregional breakdown charts">
+        <h2>Subregional breakdown</h2>
+        <p class="section-helper">Select a region to view subregional patterns.</p>
+        <div class="tab-row" role="tablist" aria-label="Select region">
+          <button class="region-tab active" type="button" data-region="Africa">Africa</button>
+          <button class="region-tab" type="button" data-region="Asia">Asia</button>
+          <button
+            class="region-tab"
+            type="button"
+            data-region="Latin America and the Caribbean"
+          >
+            LAC
+          </button>
+        </div>
+        <div class="subregional-chart-stack">
+          <article class="chart-card subregional-chart-card">
+            <h3>Population in morphologically deprived segments by subregion</h3>
+            <canvas id="subregional-deprived-population-chart"></canvas>
+          </article>
+          <article class="chart-card subregional-chart-card">
+            <h3>Deprived population share by subregion</h3>
+            <canvas id="subregional-deprived-share-chart"></canvas>
+          </article>
+        </div>
+      </section>
+
+      <section class="chart-section" aria-label="Country contribution chart">
+        <h2>Country contribution by subregion</h2>
+        <p class="section-helper">
+          Select a subregion to see which countries contribute most to its
+          morphologically deprived population.
+        </p>
+        <div class="filter-row">
+          <label>
+            Region
+            <select id="country-contribution-region">
+              <option value="Africa">Africa</option>
+              <option value="Asia" selected>Asia</option>
+              <option value="Latin America and the Caribbean">LAC</option>
+            </select>
+          </label>
+          <label>
+            Subregion
+            <select id="country-contribution-subregion"></select>
+          </label>
+        </div>
+        <article class="chart-card country-contribution-card">
+          <h3>Country contribution to subregion deprived population</h3>
+          <canvas id="country-contribution-chart"></canvas>
+        </article>
+        <p class="chart-note">
+          Percentages shown at the end of bars represent each country's
+          contribution to the selected subregion's morphologically deprived
+          population.
+        </p>
+        <article class="chart-card country-contribution-card secondary-country-chart">
+          <h3>Country deprived population share</h3>
+          <canvas id="country-deprived-share-chart"></canvas>
+        </article>
+      </section>
     </main>
+
+    <div
+      class="about-modal"
+      id="about-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="about-modal-title"
+      hidden
+    >
+      <div class="about-card">
+        <button class="about-close" type="button" aria-label="Close about dialog" data-about-close>
+          &times;
+        </button>
+        <h2 id="about-modal-title">CSMD Explorer</h2>
+        <section class="paper-section" aria-label="Associated paper">
+          <h3>Associated paper</h3>
+          <dl class="paper-details">
+            <dt>Paper title</dt>
+            <dd>The Hidden Burden of Morphological Deprivation in Small and Medium Cities</dd>
+            <dt>Authors</dt>
+            <dd>
+              Sai Ganesh Veeravalli, Alejandro Blei, John Friesen, Bedru Tareke,
+              Monika Kuffer, Claudio Persello, Raian Maretto, Angela Abascal,
+              Stefanos Georganos, and Dana R. Thomson
+            </dd>
+            <dt>Status</dt>
+            <dd>Accepted in Principle, Nature Cities, 2026</dd>
+            <dt>DOI</dt>
+            <dd>Coming soon</dd>
+          </dl>
+        </section>
+        <div class="logo-row" aria-label="Associated logos">
+          <img src="./assets/logos/deprimap_logo.png" alt="DEPRIMAP logo">
+          <img src="./assets/logos/neogeo_kau_logo.png" alt="NEOGEO / Karlstad University logo">
+          <img src="./assets/logos/formas_logo.png" alt="FORMAS logo">
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="summary.js"></script>
   </body>
 </html>
