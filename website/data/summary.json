@@ -10,7 +10,59 @@
     "deprived_segment_share": 22.1,
     "number_of_cities": 5132,
     "small_medium_deprived_population": 136536237,
-    "small_medium_deprived_share": 34.6
+    "small_medium_deprived_share": 34.6,
+    "city_size_breakdown": [
+      {
+        "city_size_code": 1,
+        "city_size_label": "Small",
+        "city_size_threshold": "<500,000 residents",
+        "total_population": 646167770,
+        "deprived_population": 102668207,
+        "non_deprived_population": 543499563,
+        "deprived_population_share": 15.9,
+        "deprived_contribution_share": 26.0
+      },
+      {
+        "city_size_code": 2,
+        "city_size_label": "Medium",
+        "city_size_threshold": "500,000–<1 million residents",
+        "total_population": 196040123,
+        "deprived_population": 33868030,
+        "non_deprived_population": 162172093,
+        "deprived_population_share": 17.3,
+        "deprived_contribution_share": 8.6
+      },
+      {
+        "city_size_code": 3,
+        "city_size_label": "Large",
+        "city_size_threshold": "1–<5 million residents",
+        "total_population": 518061969,
+        "deprived_population": 111600172,
+        "non_deprived_population": 406461797,
+        "deprived_population_share": 21.5,
+        "deprived_contribution_share": 28.3
+      },
+      {
+        "city_size_code": 4,
+        "city_size_label": "Very large",
+        "city_size_threshold": "5–<10 million residents",
+        "total_population": 170835116,
+        "deprived_population": 49503987,
+        "non_deprived_population": 121331129,
+        "deprived_population_share": 29.0,
+        "deprived_contribution_share": 12.5
+      },
+      {
+        "city_size_code": 5,
+        "city_size_label": "Megacity",
+        "city_size_threshold": "≥10 million residents",
+        "total_population": 427485166,
+        "deprived_population": 97305040,
+        "non_deprived_population": 330180126,
+        "deprived_population_share": 22.8,
+        "deprived_contribution_share": 24.6
+      }
+    ]
   },
   "regions": [
     {
@@ -25,7 +77,59 @@
       "deprived_segment_share": 50.7,
       "number_of_cities": 1492,
       "small_medium_deprived_population": 84257546,
-      "small_medium_deprived_share": 37.8
+      "small_medium_deprived_share": 37.8,
+      "city_size_breakdown": [
+        {
+          "city_size_code": 1,
+          "city_size_label": "Small",
+          "city_size_threshold": "<500,000 residents",
+          "total_population": 184606707,
+          "deprived_population": 63221657,
+          "non_deprived_population": 121385050,
+          "deprived_population_share": 34.2,
+          "deprived_contribution_share": 28.3
+        },
+        {
+          "city_size_code": 2,
+          "city_size_label": "Medium",
+          "city_size_threshold": "500,000–<1 million residents",
+          "total_population": 52499122,
+          "deprived_population": 21035889,
+          "non_deprived_population": 31463233,
+          "deprived_population_share": 40.1,
+          "deprived_contribution_share": 9.4
+        },
+        {
+          "city_size_code": 3,
+          "city_size_label": "Large",
+          "city_size_threshold": "1–<5 million residents",
+          "total_population": 148246883,
+          "deprived_population": 66374902,
+          "non_deprived_population": 81871981,
+          "deprived_population_share": 44.8,
+          "deprived_contribution_share": 29.8
+        },
+        {
+          "city_size_code": 4,
+          "city_size_label": "Very large",
+          "city_size_threshold": "5–<10 million residents",
+          "total_population": 65420614,
+          "deprived_population": 37235265,
+          "non_deprived_population": 28185349,
+          "deprived_population_share": 56.9,
+          "deprived_contribution_share": 16.7
+        },
+        {
+          "city_size_code": 5,
+          "city_size_label": "Megacity",
+          "city_size_threshold": "≥10 million residents",
+          "total_population": 61136369,
+          "deprived_population": 35204678,
+          "non_deprived_population": 25931691,
+          "deprived_population_share": 57.6,
+          "deprived_contribution_share": 15.8
+        }
+      ]
     },
     {
       "region": "Asia",
@@ -39,7 +143,59 @@
       "deprived_segment_share": 8.4,
       "number_of_cities": 2689,
       "small_medium_deprived_population": 34406663,
-      "small_medium_deprived_share": 27.5
+      "small_medium_deprived_share": 27.5,
+      "city_size_breakdown": [
+        {
+          "city_size_code": 1,
+          "city_size_label": "Small",
+          "city_size_threshold": "<500,000 residents",
+          "total_population": 350798910,
+          "deprived_population": 25317838,
+          "non_deprived_population": 325481072,
+          "deprived_population_share": 7.2,
+          "deprived_contribution_share": 20.2
+        },
+        {
+          "city_size_code": 2,
+          "city_size_label": "Medium",
+          "city_size_threshold": "500,000–<1 million residents",
+          "total_population": 102493872,
+          "deprived_population": 9088825,
+          "non_deprived_population": 93405047,
+          "deprived_population_share": 8.9,
+          "deprived_contribution_share": 7.3
+        },
+        {
+          "city_size_code": 3,
+          "city_size_label": "Large",
+          "city_size_threshold": "1–<5 million residents",
+          "total_population": 264595222,
+          "deprived_population": 26316458,
+          "non_deprived_population": 238278764,
+          "deprived_population_share": 9.9,
+          "deprived_contribution_share": 21.0
+        },
+        {
+          "city_size_code": 4,
+          "city_size_label": "Very large",
+          "city_size_threshold": "5–<10 million residents",
+          "total_population": 105414502,
+          "deprived_population": 12268722,
+          "non_deprived_population": 93145780,
+          "deprived_population_share": 11.6,
+          "deprived_contribution_share": 9.8
+        },
+        {
+          "city_size_code": 5,
+          "city_size_label": "Megacity",
+          "city_size_threshold": "≥10 million residents",
+          "total_population": 285007681,
+          "deprived_population": 52327344,
+          "non_deprived_population": 232680337,
+          "deprived_population_share": 18.4,
+          "deprived_contribution_share": 41.8
+        }
+      ]
     },
     {
       "region": "Latin America and the Caribbean",
@@ -53,7 +209,59 @@
       "deprived_segment_share": 13.3,
       "number_of_cities": 951,
       "small_medium_deprived_population": 17872028,
-      "small_medium_deprived_share": 38.4
+      "small_medium_deprived_share": 38.4,
+      "city_size_breakdown": [
+        {
+          "city_size_code": 1,
+          "city_size_label": "Small",
+          "city_size_threshold": "<500,000 residents",
+          "total_population": 110762153,
+          "deprived_population": 14128712,
+          "non_deprived_population": 96633441,
+          "deprived_population_share": 12.8,
+          "deprived_contribution_share": 30.3
+        },
+        {
+          "city_size_code": 2,
+          "city_size_label": "Medium",
+          "city_size_threshold": "500,000–<1 million residents",
+          "total_population": 41047129,
+          "deprived_population": 3743316,
+          "non_deprived_population": 37303813,
+          "deprived_population_share": 9.1,
+          "deprived_contribution_share": 8.0
+        },
+        {
+          "city_size_code": 3,
+          "city_size_label": "Large",
+          "city_size_threshold": "1–<5 million residents",
+          "total_population": 105219864,
+          "deprived_population": 18908812,
+          "non_deprived_population": 86311052,
+          "deprived_population_share": 18.0,
+          "deprived_contribution_share": 40.6
+        },
+        {
+          "city_size_code": 4,
+          "city_size_label": "Very large",
+          "city_size_threshold": "5–<10 million residents",
+          "total_population": 0,
+          "deprived_population": 0,
+          "non_deprived_population": 0,
+          "deprived_population_share": 0.0,
+          "deprived_contribution_share": 0.0
+        },
+        {
+          "city_size_code": 5,
+          "city_size_label": "Megacity",
+          "city_size_threshold": "≥10 million residents",
+          "total_population": 81341116,
+          "deprived_population": 9773018,
+          "non_deprived_population": 71568098,
+          "deprived_population_share": 12.0,
+          "deprived_contribution_share": 21.0
+        }
+      ]
     }
   ],
   "subregions": [

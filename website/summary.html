@@ -63,6 +63,101 @@
         </div>
       </section>
 
+      <section class="chart-section" aria-label="City-size analysis charts">
+        <h2>Morphological deprivation across city sizes</h2>
+        <p class="section-helper">
+          Morphological deprivation is distributed across the urban hierarchy,
+          including small and medium cities.
+        </p>
+        <div class="tab-row" role="tablist" aria-label="Select city-size geography">
+          <button
+            class="city-size-tab active"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            data-geography="global"
+          >
+            Global
+          </button>
+          <button
+            class="city-size-tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            data-geography="Africa"
+          >
+            Africa
+          </button>
+          <button
+            class="city-size-tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            data-geography="Asia"
+          >
+            Asia
+          </button>
+          <button
+            class="city-size-tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            data-geography="Latin America and the Caribbean"
+          >
+            LAC
+          </button>
+        </div>
+        <div class="city-size-finding" aria-live="polite">
+          <strong id="city-size-finding-value">...</strong>
+          <div>
+            <p>people in deprived segments live in small and medium cities</p>
+            <p class="city-size-finding-share">
+              <strong id="city-size-finding-share">...</strong>
+              of the selected geography’s deprived population
+            </p>
+          </div>
+        </div>
+        <div class="chart-grid city-size-chart-grid">
+          <article class="chart-card city-size-chart-card">
+            <h3>Population by city size and CSMD class</h3>
+            <div class="city-size-canvas-wrap">
+              <canvas id="city-size-population-chart"></canvas>
+            </div>
+            <div class="csmd-class-legend" aria-label="CSMD class legend">
+              <span class="csmd-class-legend-item">
+                <span class="csmd-class-swatch csmd-class-swatch-deprived"></span>
+                Morphologically Deprived
+              </span>
+              <span class="csmd-class-legend-item">
+                <span class="csmd-class-swatch csmd-class-swatch-non-deprived"></span>
+                Morphologically Non-deprived
+              </span>
+            </div>
+          </article>
+          <article class="chart-card city-size-chart-card">
+            <h3>Deprived population share within each city-size class</h3>
+            <div class="city-size-canvas-wrap">
+              <canvas id="city-size-deprived-share-chart"></canvas>
+            </div>
+          </article>
+        </div>
+        <div class="city-size-class-legend" aria-label="City-size class definitions">
+          <h3>City-size classes</h3>
+          <div class="city-size-class-grid">
+            <span><strong>Small:</strong> &lt;500,000 residents</span>
+            <span><strong>Medium:</strong> 500,000–&lt;1 million residents</span>
+            <span><strong>Large:</strong> 1–&lt;5 million residents</span>
+            <span><strong>Very large:</strong> 5–&lt;10 million residents</span>
+            <span><strong>Megacity:</strong> ≥10 million residents</span>
+          </div>
+        </div>
+        <p class="chart-note">
+          City-size classes are based on the total population of each urban
+          centre. Chart populations represent residents covered by CSMD city
+          segments.
+        </p>
+      </section>
+
       <section class="chart-section" aria-label="Regional comparison charts">
         <h2>Regional comparison</h2>
         <div class="chart-grid">

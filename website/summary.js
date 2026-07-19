@@ -3,6 +3,8 @@ let subregionalPopulationChart;
 let subregionalShareChart;
 let countryContributionChart;
 let countryDeprivedShareChart;
+let citySizePopulationChart;
+let citySizeDeprivedShareChart;
 
 document.addEventListener("DOMContentLoaded", () => {
   loadSummary();
@@ -19,6 +21,7 @@ async function loadSummary() {
     const data = await response.json();
     renderGlobalSummary(data);
     renderPopulationClassificationChart(data.global);
+    setupCitySizeAnalysis(data.global, data.regions || []);
     renderRegionalComparisonCharts(data.regions || []);
     setupSubregionalBreakdown(data.subregions || []);
     setupCountryContribution(data.countries || [], data.subregions || []);
@@ -138,6 +141,226 @@ function renderPopulationClassificationChart(global) {
       }
     }
   });
+}
+
+function setupCitySizeAnalysis(globalSummary, regions) {
+  const tabs = document.querySelectorAll(".city-size-tab");
+  if (tabs.length === 0) return;
+
+  function selectGeography(geography) {
+    const summary = geography === "global"
+      ? globalSummary
+      : regions.find((region) => region.region === geography);
+    if (!summary) return;
+
+    tabs.forEach((tab) => {
+      const isActive = tab.dataset.geography === geography;
+      tab.classList.toggle("active", isActive);
+      tab.setAttribute("aria-selected", String(isActive));
+    });
+
+    updateCitySizeAnalysis(summary);
+  }
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      selectGeography(tab.dataset.geography);
+    });
+  });
+
+  selectGeography("global");
+}
+
+function updateCitySizeAnalysis(summary) {
+  const breakdown = summary.city_size_breakdown || [];
+  renderCitySizeFinding(summary);
+  renderCitySizePopulationChart(breakdown);
+  renderCitySizeDeprivedShareChart(breakdown);
+}
+
+function renderCitySizeFinding(summary) {
+  const value = document.getElementById("city-size-finding-value");
+  const share = document.getElementById("city-size-finding-share");
+
+  if (value) {
+    value.textContent = formatCitySizePopulation(
+      summary.small_medium_deprived_population
+    );
+  }
+  if (share) {
+    share.textContent = formatPercent(summary.small_medium_deprived_share);
+  }
+}
+
+function renderCitySizePopulationChart(breakdown) {
+  const canvas = document.getElementById("city-size-population-chart");
+  if (!canvas || !window.Chart) return;
+
+  if (citySizePopulationChart) {
+    citySizePopulationChart.destroy();
+  }
+
+  citySizePopulationChart = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: breakdown.map((citySize) => citySize.city_size_label),
+      datasets: [
+        {
+          label: "Morphologically Deprived",
+          data: breakdown.map((citySize) => citySize.deprived_population),
+          backgroundColor: "rgba(178, 72, 70, 0.74)",
+          borderColor: "#7f2928",
+          borderWidth: 1
+        },
+        {
+          label: "Morphologically Non-deprived",
+          data: breakdown.map((citySize) => citySize.non_deprived_population),
+          backgroundColor: "rgba(212, 212, 212, 0.76)",
+          borderColor: "#9a9a9a",
+          borderWidth: 1
+        }
+      ]
+    },
+    options: citySizePopulationOptions()
+  });
+}
+
+function citySizePopulationOptions() {
+  return {
+    indexAxis: "y",
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+      duration: 500
+    },
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        callbacks: {
+          title(items) {
+            return items[0].label;
+          },
+          label(context) {
+            return `${context.dataset.label}: ${formatCitySizePopulation(context.raw)}`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        stacked: true,
+        beginAtZero: true,
+        ticks: {
+          color: "#555",
+          callback(value) {
+            return formatCitySizePopulation(value);
+          }
+        },
+        grid: {
+          color: "rgba(0, 0, 0, 0.08)"
+        }
+      },
+      y: {
+        stacked: true,
+        ticks: {
+          color: "#555",
+          font: {
+            size: 12
+          }
+        },
+        grid: {
+          display: false
+        }
+      }
+    }
+  };
+}
+
+function renderCitySizeDeprivedShareChart(breakdown) {
+  const canvas = document.getElementById("city-size-deprived-share-chart");
+  if (!canvas || !window.Chart) return;
+
+  if (citySizeDeprivedShareChart) {
+    citySizeDeprivedShareChart.destroy();
+  }
+
+  citySizeDeprivedShareChart = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: breakdown.map((citySize) => citySize.city_size_label),
+      datasets: [
+        {
+          label: "Deprived population share",
+          data: breakdown.map((citySize) => citySize.deprived_population_share),
+          backgroundColor: "rgba(178, 72, 70, 0.74)",
+          borderColor: "#7f2928",
+          borderWidth: 1
+        }
+      ]
+    },
+    options: citySizeDeprivedShareOptions(),
+    plugins: [horizontalValueLabelsPlugin(formatPercent)]
+  });
+}
+
+function citySizeDeprivedShareOptions() {
+  return {
+    indexAxis: "y",
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+      duration: 500
+    },
+    layout: {
+      padding: {
+        right: 62,
+        bottom: 8
+      }
+    },
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        callbacks: {
+          title(items) {
+            return items[0].label;
+          },
+          label(context) {
+            return `${context.dataset.label}: ${formatPercent(context.raw)}`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        beginAtZero: true,
+        max: 100,
+        ticks: {
+          color: "#555",
+          callback(value) {
+            return formatPercent(value);
+          }
+        },
+        grid: {
+          color: "rgba(0, 0, 0, 0.08)"
+        }
+      },
+      y: {
+        ticks: {
+          color: "#555",
+          font: {
+            size: 12
+          }
+        },
+        grid: {
+          display: false
+        }
+      }
+    }
+  };
 }
 
 function renderRegionalComparisonCharts(regions) {
@@ -839,6 +1062,21 @@ function formatCompactPopulation(value) {
     return `${Math.round(number / 1000)}k`;
   }
   return "0";
+}
+
+function formatCitySizePopulation(value) {
+  const parsed = Number(value);
+  const number = Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  if (number >= 1000000000) {
+    return `${trimTrailingZeros((number / 1000000000).toFixed(2))}B`;
+  }
+  if (number >= 1000000) {
+    return `${trimTrailingZeros((number / 1000000).toFixed(1))}M`;
+  }
+  if (number >= 1000) {
+    return `${trimTrailingZeros((number / 1000).toFixed(1))}k`;
+  }
+  return formatCount(Math.round(number));
 }
 
 function trimTrailingZeros(value) {

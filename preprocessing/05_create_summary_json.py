@@ -26,6 +26,14 @@ CITY_SIZE_LABELS = {
     5: "Megacity (≥10 million residents)",
 }
 
+CITY_SIZE_BREAKDOWN_METADATA = [
+    (1, "Small", "<500,000 residents"),
+    (2, "Medium", "500,000–<1 million residents"),
+    (3, "Large", "1–<5 million residents"),
+    (4, "Very large", "5–<10 million residents"),
+    (5, "Megacity", "≥10 million residents"),
+]
+
 
 def percent(numerator: int, denominator: int) -> float:
     if denominator == 0:
@@ -37,7 +45,48 @@ def number_of_cities(df: pd.DataFrame) -> int:
     return int(df[["city", "country"]].drop_duplicates().shape[0])
 
 
-def summarize(df: pd.DataFrame, include_small_medium: bool = True) -> dict:
+def create_city_size_breakdown(
+    df: pd.DataFrame,
+    geography_deprived_population: int,
+) -> list[dict]:
+    breakdown = []
+
+    for code, label, threshold in CITY_SIZE_BREAKDOWN_METADATA:
+        city_size = df["city_size_code"] == code
+        deprived = city_size & (df["csmd_label"] == 1)
+        non_deprived = city_size & (df["csmd_label"] == 0)
+
+        total_population = int(df.loc[city_size, "population"].sum())
+        deprived_population = int(df.loc[deprived, "population"].sum())
+        non_deprived_population = int(df.loc[non_deprived, "population"].sum())
+
+        breakdown.append(
+            {
+                "city_size_code": code,
+                "city_size_label": label,
+                "city_size_threshold": threshold,
+                "total_population": total_population,
+                "deprived_population": deprived_population,
+                "non_deprived_population": non_deprived_population,
+                "deprived_population_share": percent(
+                    deprived_population,
+                    total_population,
+                ),
+                "deprived_contribution_share": percent(
+                    deprived_population,
+                    geography_deprived_population,
+                ),
+            }
+        )
+
+    return breakdown
+
+
+def summarize(
+    df: pd.DataFrame,
+    include_small_medium: bool = True,
+    include_city_size_breakdown: bool = False,
+) -> dict:
     deprived = df["csmd_label"] == 1
     non_deprived = df["csmd_label"] == 0
 
@@ -75,6 +124,12 @@ def summarize(df: pd.DataFrame, include_small_medium: bool = True) -> dict:
             }
         )
 
+    if include_city_size_breakdown:
+        summary["city_size_breakdown"] = create_city_size_breakdown(
+            df,
+            deprived_population,
+        )
+
     return summary
 
 
@@ -97,6 +152,7 @@ def grouped_summaries(
     *,
     include_small_medium: bool = True,
     include_city_size: bool = False,
+    include_city_size_breakdown: bool = False,
 ) -> list[dict]:
     records = []
 
@@ -105,7 +161,13 @@ def grouped_summaries(
             keys = (keys,)
 
         record = {column: value for column, value in zip(group_columns, keys)}
-        record.update(summarize(group, include_small_medium=include_small_medium))
+        record.update(
+            summarize(
+                group,
+                include_small_medium=include_small_medium,
+                include_city_size_breakdown=include_city_size_breakdown,
+            )
+        )
         if include_city_size:
             record.update(city_size_summary(group))
         records.append(record)
@@ -113,6 +175,54 @@ def grouped_summaries(
     return sorted(
         records,
         key=lambda record: tuple(str(record[column]).lower() for column in group_columns),
+    )
+
+
+def print_city_size_breakdown_qa(name: str, geography: dict) -> None:
+    print(f"\n{name} city-size breakdown")
+    breakdown = geography["city_size_breakdown"]
+
+    for city_size in breakdown:
+        print(
+            f"  {city_size['city_size_label']}: "
+            f"total={city_size['total_population']}, "
+            f"deprived={city_size['deprived_population']}, "
+            f"non_deprived={city_size['non_deprived_population']}, "
+            f"deprived_share={city_size['deprived_population_share']}%, "
+            f"deprived_contribution={city_size['deprived_contribution_share']}%"
+        )
+
+    class_total_population = sum(item["total_population"] for item in breakdown)
+    class_deprived_population = sum(
+        item["deprived_population"] for item in breakdown
+    )
+    class_non_deprived_population = sum(
+        item["non_deprived_population"] for item in breakdown
+    )
+    totals_match = (
+        class_total_population == geography["total_population"]
+        and class_deprived_population == geography["deprived_population"]
+        and class_non_deprived_population == geography["non_deprived_population"]
+    )
+
+    small_medium_deprived_population = sum(
+        item["deprived_population"] for item in breakdown[:2]
+    )
+    small_medium_deprived_share = percent(
+        small_medium_deprived_population,
+        geography["deprived_population"],
+    )
+    small_medium_matches = (
+        small_medium_deprived_population
+        == geography["small_medium_deprived_population"]
+        and small_medium_deprived_share == geography["small_medium_deprived_share"]
+    )
+
+    print(f"  Class totals match geography totals: {totals_match}")
+    print(
+        "  Small + Medium match sidebar insight: "
+        f"{small_medium_matches} "
+        f"({small_medium_deprived_population}, {small_medium_deprived_share}%)"
     )
 
 
@@ -153,8 +263,12 @@ def main() -> None:
         )
 
     summary = {
-        "global": summarize(df),
-        "regions": grouped_summaries(df, ["region"]),
+        "global": summarize(df, include_city_size_breakdown=True),
+        "regions": grouped_summaries(
+            df,
+            ["region"],
+            include_city_size_breakdown=True,
+        ),
         "subregions": grouped_summaries(df, ["region", "subregion"]),
         "countries": grouped_summaries(df, ["country", "region", "subregion"]),
         "cities": grouped_summaries(
@@ -203,6 +317,10 @@ def main() -> None:
         f"Example city ({example_city['city']}, {example_city['country']}): "
         f"{example_city['city_size_label']}"
     )
+
+    print_city_size_breakdown_qa("Global", summary["global"])
+    for region_summary in summary["regions"]:
+        print_city_size_breakdown_qa(region_summary["region"], region_summary)
 
 
 if __name__ == "__main__":
