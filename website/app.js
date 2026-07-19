@@ -8,6 +8,14 @@ const CSMD_HIGHLIGHT_SOURCE_ID = "selected-csmd-segment";
 const CSMD_HIGHLIGHT_FILL_LAYER_ID = "selected-csmd-segment-fill";
 const CSMD_HIGHLIGHT_OUTLINE_LAYER_ID = "selected-csmd-segment-outline";
 
+const CITY_SIZE_DETAILS = {
+  1: { name: "Small", threshold: "<500,000 residents" },
+  2: { name: "Medium", threshold: "500,000–<1 million residents" },
+  3: { name: "Large", threshold: "1–<5 million residents" },
+  4: { name: "Very large", threshold: "5–<10 million residents" },
+  5: { name: "Megacity", threshold: "≥10 million residents" }
+};
+
 let currentBasemap = "streets";
 let currentCsmdVisibility = "on";
 let selectedPopup = null;
@@ -666,6 +674,7 @@ function fitBoundsPadding() {
 function updateSummary(record, countryCount, cityCount) {
   if (!record) return;
 
+  updateCitySizeInsight(record);
   setSummaryText("summary-total-population", formatPopulation(record.total_population));
   setSummaryText(
     "summary-deprived-population",
@@ -679,6 +688,44 @@ function updateSummary(record, countryCount, cityCount) {
   setSummaryText("summary-deprived-segments", formatCount(record.deprived_segments));
   setSummaryText("summary-countries", formatCount(countryCount));
   setSummaryText("summary-cities", formatCount(cityCount));
+}
+
+function updateCitySizeInsight(record) {
+  const heading = document.getElementById("city-size-insight-heading");
+  const value = document.getElementById("city-size-insight-value");
+  const description = document.getElementById("city-size-insight-description");
+  const shareText = document.getElementById("city-size-insight-share");
+  const progress = document.getElementById("city-size-insight-progress");
+  const progressFill = document.getElementById("city-size-insight-progress-fill");
+  if (!heading || !value || !description || !shareText || !progress || !progressFill) {
+    return;
+  }
+
+  const citySize = CITY_SIZE_DETAILS[Number(record.city_size_code)];
+  if (citySize) {
+    heading.textContent = "City size";
+    value.textContent = citySize.name;
+    description.textContent = citySize.threshold;
+    shareText.hidden = true;
+    progress.hidden = true;
+    progressFill.style.width = "0%";
+    progress.setAttribute("aria-valuenow", "0");
+    return;
+  }
+
+  const share = clampPercentage(record.small_medium_deprived_share);
+  heading.textContent = "Beyond megacities";
+  value.textContent = formatInsightPopulation(
+    record.small_medium_deprived_population
+  );
+  description.textContent =
+    "people in deprived segments live in small and medium cities";
+  shareText.textContent =
+    `${formatInsightPercent(share)} of the selected area's deprived population`;
+  shareText.hidden = false;
+  progress.hidden = false;
+  progressFill.style.width = `${share}%`;
+  progress.setAttribute("aria-valuenow", String(share));
 }
 
 function setSummaryText(id, value) {
@@ -697,12 +744,37 @@ function formatPopulation(value) {
   return formatCount(number);
 }
 
+function formatInsightPopulation(value) {
+  const parsed = Number(value);
+  const number = Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  if (number >= 1000000000) {
+    return `${trimTrailingZeros((number / 1000000000).toFixed(2))}B`;
+  }
+  if (number >= 1000000) {
+    return `${trimTrailingZeros((number / 1000000).toFixed(1))}M`;
+  }
+  if (number >= 1000) {
+    return `${trimTrailingZeros((number / 1000).toFixed(1))}k`;
+  }
+  return formatCount(Math.round(number));
+}
+
 function trimTrailingZeros(value) {
   return value.replace(/\.0+$/, "").replace(/(\.\d*[1-9])0+$/, "$1");
 }
 
 function formatPercent(value) {
   return `${(Number(value) || 0).toFixed(1)}%`;
+}
+
+function clampPercentage(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 0;
+  return Math.min(100, Math.max(0, number));
+}
+
+function formatInsightPercent(value) {
+  return `${trimTrailingZeros(clampPercentage(value).toFixed(1))}%`;
 }
 
 function formatCount(value) {

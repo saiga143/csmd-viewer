@@ -5,7 +5,7 @@ import geopandas as gpd
 import pandas as pd
 
 
-INPUT_GPKG_PATH = Path("outputs") / "csmd_viewer_segments_test.gpkg"
+INPUT_GPKG_PATH = Path("outputs") / "csmd_viewer_segments_v2.gpkg"
 OUTPUT_JSON_PATH = Path("website") / "data" / "summary.json"
 REQUIRED_COLUMNS = [
     "city",
@@ -13,8 +13,18 @@ REQUIRED_COLUMNS = [
     "region",
     "subregion",
     "population",
+    "city_size_code",
+    "city_size_label",
     "csmd_label",
 ]
+
+CITY_SIZE_LABELS = {
+    1: "Small (<500,000 residents)",
+    2: "Medium (500,000–<1 million residents)",
+    3: "Large (1–<5 million residents)",
+    4: "Very large (5–<10 million residents)",
+    5: "Megacity (≥10 million residents)",
+}
 
 
 def percent(numerator: int, denominator: int) -> float:
@@ -27,7 +37,7 @@ def number_of_cities(df: pd.DataFrame) -> int:
     return int(df[["city", "country"]].drop_duplicates().shape[0])
 
 
-def summarize(df: pd.DataFrame) -> dict:
+def summarize(df: pd.DataFrame, include_small_medium: bool = True) -> dict:
     deprived = df["csmd_label"] == 1
     non_deprived = df["csmd_label"] == 0
 
@@ -38,7 +48,7 @@ def summarize(df: pd.DataFrame) -> dict:
     deprived_population = int(df.loc[deprived, "population"].sum())
     non_deprived_population = int(df.loc[non_deprived, "population"].sum())
 
-    return {
+    summary = {
         "total_segments": total_segments,
         "deprived_segments": deprived_segments,
         "non_deprived_segments": non_deprived_segments,
@@ -50,8 +60,44 @@ def summarize(df: pd.DataFrame) -> dict:
         "number_of_cities": number_of_cities(df),
     }
 
+    if include_small_medium:
+        small_medium_deprived = deprived & df["city_size_code"].isin([1, 2])
+        small_medium_deprived_population = int(
+            df.loc[small_medium_deprived, "population"].sum()
+        )
+        summary.update(
+            {
+                "small_medium_deprived_population": small_medium_deprived_population,
+                "small_medium_deprived_share": percent(
+                    small_medium_deprived_population,
+                    deprived_population,
+                ),
+            }
+        )
 
-def grouped_summaries(df: pd.DataFrame, group_columns: list[str]) -> list[dict]:
+    return summary
+
+
+def city_size_summary(df: pd.DataFrame) -> dict:
+    codes = df["city_size_code"].dropna().astype(int)
+    if codes.empty:
+        raise ValueError("A city summary has no city_size_code value.")
+
+    # Preserve the established city-country grouping when names cover multiple city IDs.
+    code = int(codes.max())
+    return {
+        "city_size_code": code,
+        "city_size_label": CITY_SIZE_LABELS[code],
+    }
+
+
+def grouped_summaries(
+    df: pd.DataFrame,
+    group_columns: list[str],
+    *,
+    include_small_medium: bool = True,
+    include_city_size: bool = False,
+) -> list[dict]:
     records = []
 
     for keys, group in df.groupby(group_columns, dropna=False, sort=True):
@@ -59,7 +105,9 @@ def grouped_summaries(df: pd.DataFrame, group_columns: list[str]) -> list[dict]:
             keys = (keys,)
 
         record = {column: value for column, value in zip(group_columns, keys)}
-        record.update(summarize(group))
+        record.update(summarize(group, include_small_medium=include_small_medium))
+        if include_city_size:
+            record.update(city_size_summary(group))
         records.append(record)
 
     return sorted(
@@ -88,14 +136,33 @@ def main() -> None:
 
     df = df[REQUIRED_COLUMNS].copy()
     df["population"] = pd.to_numeric(df["population"], errors="coerce").fillna(0).round()
+    df["city_size_code"] = pd.to_numeric(
+        df["city_size_code"], errors="coerce"
+    ).astype("Int64")
     df["csmd_label"] = pd.to_numeric(df["csmd_label"], errors="coerce")
+
+    expected_city_size_labels = df["city_size_code"].map(CITY_SIZE_LABELS)
+    invalid_city_sizes = (
+        df["city_size_code"].isna()
+        | expected_city_size_labels.isna()
+        | df["city_size_label"].ne(expected_city_size_labels)
+    )
+    if invalid_city_sizes.any():
+        raise ValueError(
+            f"Found {int(invalid_city_sizes.sum())} invalid city-size code/label pairs."
+        )
 
     summary = {
         "global": summarize(df),
         "regions": grouped_summaries(df, ["region"]),
         "subregions": grouped_summaries(df, ["region", "subregion"]),
         "countries": grouped_summaries(df, ["country", "region", "subregion"]),
-        "cities": grouped_summaries(df, ["city", "country", "region", "subregion"]),
+        "cities": grouped_summaries(
+            df,
+            ["city", "country", "region", "subregion"],
+            include_small_medium=False,
+            include_city_size=True,
+        ),
     }
 
     OUTPUT_JSON_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -110,6 +177,32 @@ def main() -> None:
     print(f"Countries: {len(summary['countries'])}")
     print(f"Cities: {len(summary['cities'])}")
     print(f"Output path: {OUTPUT_JSON_PATH}")
+
+    print("\nSmall/medium deprived population QA")
+    global_summary = summary["global"]
+    print(
+        "Global: "
+        f"{global_summary['small_medium_deprived_population']} "
+        f"({global_summary['small_medium_deprived_share']}%)"
+    )
+    for region_summary in summary["regions"]:
+        print(
+            f"{region_summary['region']}: "
+            f"{region_summary['small_medium_deprived_population']} "
+            f"({region_summary['small_medium_deprived_share']}%)"
+        )
+
+    example_country = summary["countries"][0]
+    print(
+        f"Example country ({example_country['country']}): "
+        f"{example_country['small_medium_deprived_population']} "
+        f"({example_country['small_medium_deprived_share']}%)"
+    )
+    example_city = summary["cities"][0]
+    print(
+        f"Example city ({example_city['city']}, {example_city['country']}): "
+        f"{example_city['city_size_label']}"
+    )
 
 
 if __name__ == "__main__":
