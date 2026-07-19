@@ -148,6 +148,21 @@ body {
   line-height: 1.45;
 }
 
+.paper-details a {
+  color: #7f2928;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.paper-details a:hover,
+.paper-details a:focus-visible {
+  color: #541b1a;
+  outline: 2px solid rgba(127, 41, 40, 0.24);
+  outline-offset: 2px;
+}
+
 .logo-row {
   display: flex;
   flex-wrap: wrap;
