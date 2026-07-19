@@ -1,4 +1,4 @@
-const PMTILES_URL = "https://pub-1eed28d124134a23a63504e74634d29b.r2.dev/csmd_viewer_segments.pmtiles";
+const PMTILES_URL = "https://pub-1eed28d124134a23a63504e74634d29b.r2.dev/csmd_viewer_segments_v2.pmtiles";
 const SOURCE_LAYER = "csmd_segments";
 const SATELLITE_SOURCE_ID = "esri-world-imagery";
 const SATELLITE_LAYER_ID = "esri-world-imagery";
@@ -177,7 +177,7 @@ function renderPopup(properties) {
     ["region", "Region"],
     ["subregion", "Subregion"],
     ["population", "Population in segment"],
-    ["city_size", "City size class"],
+    ["city_size_label", "City size class"],
     ["csmd_prob", "CSMD probability"],
     ["csmd_label", "Classification"]
   ];
